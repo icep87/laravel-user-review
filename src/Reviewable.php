@@ -30,19 +30,21 @@ trait Reviewable
         return $this->reviews()->where('active',1)->where('user_id', $user->id)->avg('rating');
     }
 
-    public function makeReview($user, $rating, $review=null)
+    public function makeReview($user, $rating, $review=null, $reviewTitle=null)
     {
         return $this->reviews()->create([
+            'review_title' => $reviewTitle,
             'review' => $review,
             'rating' => $rating,
             'user_id' => $user->id
         ]);
     }
     
-    public function makeOrUpdateReview($user, $rating, $review=null)
+    public function makeOrUpdateReview($user, $rating, $review=null, $reviewTitle=null)
     {
         $criteria = ["user_id" => $user->id];
         $payLoad = [
+            'review_title' => $reviewTitle,
             'review' => $review,
             'rating' => $rating,
             'user_id' => $user->id

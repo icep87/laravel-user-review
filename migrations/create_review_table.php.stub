@@ -13,6 +13,7 @@ class CreateReviewTable extends Migration
             $table->unsignedBigInteger('model_id');
             $table->string('model_type');
             $table->bigInteger('user_id');
+            $table->text('review_title')->nullable();
             $table->text('review')->nullable();
             $table->integer('rating');
             $table->text('reply')->nullable();
