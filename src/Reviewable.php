@@ -1,36 +1,34 @@
-<?php 
+<?php
+
 namespace DGvai\Review;
 
 use DGvai\Review\Review;
 
-trait Reviewable 
+trait Reviewable
 {
     public function reviews()
     {
-        return $this->morphMany(Review::class,'model');
+        return $this->morphMany(Review::class, 'model');
     }
 
-    public function averageRating($star=null)
+    public function averageRating($star = null)
     {
-        if(!is_null($star))
-        {
-            $quantity = $this->reviews()->where('active',1)->count();
-            $total = $this->reviews()->where('active',1)->sum('rating');
+        if (!is_null($star)) {
+            $quantity = $this->reviews()->where('active', 1)->count();
+            $total = $this->reviews()->where('active', 1)->sum('rating');
 
             return ($quantity * $star) > 0 ? $total / (($quantity * $star) / 100) : 0;
-        }
-        else
-        {
-            return number_format((float)$this->reviews()->where('active',1)->avg('rating'),2);
+        } else {
+            return number_format((float)$this->reviews()->where('active', 1)->avg('rating'), 2);
         }
     }
 
     public function userRating($user)
     {
-        return $this->reviews()->where('active',1)->where('user_id', $user->id)->avg('rating');
+        return $this->reviews()->where('active', 1)->where('user_id', $user->id)->avg('rating');
     }
 
-    public function makeReview($user, $rating, $review=null, $reviewTitle=null)
+    public function makeReview($user, $rating, $review = null, $reviewTitle = null)
     {
         return $this->reviews()->create([
             'review_title' => $reviewTitle,
@@ -39,8 +37,8 @@ trait Reviewable
             'user_id' => $user->id
         ]);
     }
-    
-    public function makeOrUpdateReview($user, $rating, $review=null, $reviewTitle=null)
+
+    public function makeOrUpdateReview($user, $rating, $review = null, $reviewTitle = null)
     {
         $criteria = ["user_id" => $user->id];
         $payLoad = [
@@ -56,10 +54,10 @@ trait Reviewable
     public function getRatingAttribute()
     {
         return ($this->averageRating() == '0.00')
-                ? config('user-review.fake.enabled') 
-                    ? config('user-review.fake.star')
-                    : $this->averageRating()
-                : $this->averageRating();
+            ? config('user-review.fake.enabled')
+            ? config('user-review.fake.star')
+            : $this->averageRating()
+            : $this->averageRating();
     }
 
     public function getRatingPercentAttribute()
@@ -69,13 +67,23 @@ trait Reviewable
 
     public function filter(int $rating)
     {
-        return $this->reviews()->where('active',1)->where('rating',$rating)->get();
+        return $this->reviews()->where('active', 1)->where('rating', $rating)->get();
     }
 
     public function filteredPercentage(int $rating)
     {
-        $count = $this->reviews()->where('active',1)->where('rating',$rating)->count();
-        $total = $this->reviews()->where('active',1)->count();
-        return ($total == 0) ? 0 : ($count/$total) * 100;
+        $count = $this->reviews()->where('active', 1)->where('rating', $rating)->count();
+        $total = $this->reviews()->where('active', 1)->count();
+        return ($total == 0) ? 0 : ($count / $total) * 100;
+    }
+
+    public function getRatingCountByStar(int $rating)
+    {
+        return $this->reviews()->where('active', 1)->where('rating', $rating)->count();
+    }
+
+    public function getRatingStarAttribute()
+    {
+        return $this->reviews()->where('active', 1)->orderBy('rating', 'asc')->groupBy('rating')->count();
     }
 }
