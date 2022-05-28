@@ -3,6 +3,7 @@
 namespace DGvai\Review;
 
 use DGvai\Review\Review;
+use Illuminate\Support\Facades\DB;
 
 trait Reviewable
 {
@@ -84,6 +85,18 @@ trait Reviewable
 
     public function getRatingStarAttribute()
     {
-        return $this->reviews()->where('active', 1)->orderBy('rating', 'asc')->groupBy('rating')->count();
+        $allReviews = $this->reviews()->where('active', 1)->get();
+        $counted = $allReviews->mapWithKeys(function ($item) {
+            for ($i = 1; $i <= config('user-review.star'); $i++) {
+                $rating[$i] = $item->where('rating', $i)->count();
+            }
+            return $rating;
+        });
+        return $counted;
+    }
+
+    public function getTotalRatingCount()
+    {
+        return $this->reviews()->where('active', 1)->count();
     }
 }
